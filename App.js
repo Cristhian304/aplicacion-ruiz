@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-    
+    <SafeAreaView style={styles.container}>
+      {/* Barra superior */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Search</Text>
@@ -14,21 +14,21 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
-    
+      {/* Contenido principal */}
       <ScrollView style={styles.content}>
-  
-        <Text style={styles.sectionTitle}>Receitas ya probadas</Text>
+        {/* Sección de recetas */}
+        <Text style={styles.sectionTitle}>Recetas ya probadas</Text>
         {['Receta 1', 'Receta 2', 'Receta 3', 'Receta 4'].map((item, index) => (
           <View key={`receta-${index}`} style={styles.itemCard}>
             <Text style={styles.itemText}>{item}</Text>
           </View>
         ))}
 
-    
-        <Text style={styles.sectionTitle}>Title</Text>
-        {['Comida 1', 'Comida 2', 'Comida 3', 'Comida 4'].map((item, index) => (
-          <View 
-            key={`product-${index}`} 
+        {/* Sección de productos */}
+        <Text style={styles.sectionTitle}>Productos</Text>
+        {['Marca Producto 1', 'Marca Producto 2', 'etn.aa', 'etn.c'].map((item, index) => (
+          <View
+            key={`producto-${index}`}
             style={[
               styles.itemCard,
               item.includes('etn.') && styles.codeItem
@@ -39,15 +39,34 @@ export default function App() {
         ))}
       </ScrollView>
 
-   
+      {/* Menú inferior personalizado */}
       <View style={styles.bottomMenu}>
-        {['🏠', '🧭', '🛒', '⏱', '👤'].map((icon, index) => (
-          <TouchableOpacity key={`menu-${index}`} style={styles.menuButton}>
-            <Text style={styles.menuIcon}>{icon}</Text>
-          </TouchableOpacity>
-        ))}
+        <View style={styles.menuButton}>
+          <Text style={styles.menuIcon}>🏠</Text>
+          <Text style={styles.menuText}>Inicio</Text>
+        </View>
+        
+        <View style={styles.menuButton}>
+          <Text style={styles.menuIcon}>🔍</Text>
+          <Text style={styles.menuText}>Buscar</Text>
+        </View>
+        
+        <View style={styles.menuButton}>
+          <Text style={styles.menuIcon}>🛒</Text>
+          <Text style={styles.menuText}>Carrito</Text>
+        </View>
+        
+        <View style={styles.menuButton}>
+          <Text style={styles.menuIcon}>❤️</Text>
+          <Text style={styles.menuText}>Favoritos</Text>
+        </View>
+        
+        <View style={styles.menuButton}>
+          <Text style={styles.menuIcon}>👤</Text>
+          <Text style={styles.menuText}>Perfil</Text>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -70,21 +89,23 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#007AFF',
     fontSize: 16,
+    fontWeight: '500',
   },
   content: {
     flex: 1,
     padding: 15,
+    marginBottom: 70, // Espacio para el menú inferior
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginVertical: 10,
     color: '#333',
   },
   itemCard: {
     backgroundColor: 'white',
     padding: 15,
-    marginBottom: 8,
+    marginBottom: 10,
     borderRadius: 8,
     elevation: 2,
   },
@@ -97,15 +118,27 @@ const styles = StyleSheet.create({
   bottomMenu: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 12,
+    alignItems: 'center',
+    paddingVertical: 10,
     backgroundColor: 'white',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 60,
   },
   menuButton: {
-    padding: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 20,
+    marginBottom: 4,
+  },
+  menuText: {
+    fontSize: 12,
+    color: '#333',
   },
 });

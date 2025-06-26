@@ -1,57 +1,112 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 export default function PantallaPrincipal() {
+  const navigation = useNavigation();
+
   return (
-    <ScrollView style={styles.contenedor}>
-     
-      <View style={styles.encabezado}>
-        <Text style={styles.hora}>9:41</Text>
-        <View style={styles.botonesSuperiores}>
-          <TouchableOpacity>
-            <Text style={styles.textoBoton}>Buscar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.textoBoton}>Receta recomendada</Text>
-          </TouchableOpacity>
-        </View>
+    <View style={styles.container}>
+      {/* Barra superior */}
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Search</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Receta recomendada</Text>
+        </TouchableOpacity>
       </View>
 
-      
-      <Text style={styles.tituloSeccion}>Recetas ya probadas</Text>
-      {['Receta 1', 'Receta 2', 'Receta 3', 'Receta 4'].map((receta, index) => (
-        <TouchableOpacity key={index} style={styles.tarjeta}>
-          <Text>{receta}</Text>
-        </TouchableOpacity>
-      ))}
+      {/* Contenido principal */}
+      <ScrollView style={styles.content}>
+        <Text style={styles.sectionTitle}>Recetas ya probadas</Text>
+        {['Receta 1', 'Receta 2', 'Receta 3', 'Receta 4'].map((item, index) => (
+          <TouchableOpacity 
+            key={`receta-${index}`} 
+            style={styles.itemCard}
+            onPress={() => navigation.navigate('DetalleReceta')} // Ejemplo de navegación
+          >
+            <Text style={styles.itemText}>{item}</Text>
+          </TouchableOpacity>
+        ))}
 
-     
-      <Text style={styles.tituloSeccion}>Productos</Text>
-      {['Marca Producto 1', 'Marca Producto 2', 'etn.aa', 'etn.c'].map((item, index) => (
-        <TouchableOpacity key={index} style={styles.tarjeta}>
-          <Text>{item}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+        <Text style={styles.sectionTitle}>Nuevas</Text>
+        {['Comida 1', 'Comida 2', 'Comida 3', 'Comida 4'].map((item, index) => (
+          <TouchableOpacity 
+            key={`nueva-${index}`}
+            style={[styles.itemCard, item.includes('etn.') && styles.codeItem]}
+          >
+            <Text style={styles.itemText}>{item}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Menú inferior personalizado */}
+      <View style={styles.bottomMenu}>
+        {[
+          { icon: '🏠', screen: 'Main' },
+          { icon: '🧭', screen: 'Explorar' },
+          { icon: '🛒', screen: 'Carrito' },
+          { icon: '🕗', screen: 'Historial' },
+          { icon: '👤', screen: 'Perfil' }
+        ].map((item, index) => (
+          <TouchableOpacity 
+            key={`menu-${index}`} 
+            style={styles.menuButton}
+            onPress={() => navigation.navigate(item.screen)}
+          >
+            <Text style={styles.menuIcon}>{item.icon}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: { padding: 16 },
-  encabezado: {
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  hora: { fontWeight: 'bold' },
-  botonesSuperiores: { flexDirection: 'row', gap: 16 },
-  textoBoton: { color: '#007AFF' },
-  tituloSeccion: { fontSize: 18, fontWeight: 'bold', marginVertical: 10 },
-  tarjeta: {
+    padding: 15,
     backgroundColor: 'white',
-    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  buttonText: {
+    color: '#007AFF',
+    fontSize: 16,
+  },
+  content: {
+    flex: 1,
+    padding: 15,
+    marginBottom: 60, // Ajuste para el menú inferior
+  },
+  itemCard: {
+    backgroundColor: 'white',
+    padding: 15,
+    marginBottom: 10,
     borderRadius: 8,
-    marginBottom: 8,
     elevation: 2,
+  },
+  codeItem: {
+    backgroundColor: '#f0f0f0',
+  },
+  bottomMenu: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 12,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  menuIcon: {
+    fontSize: 24,
   },
 });
