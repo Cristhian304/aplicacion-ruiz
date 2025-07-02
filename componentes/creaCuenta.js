@@ -6,8 +6,8 @@ export default function App() {
     <View style={styles.container}>
       <Text style={styles.title}>Recetario</Text>
       
-      <Text style={styles.subtitle}>Create an account</Text>
-      <Text style={styles.instruction}>Enter your email to sign up for this app</Text>
+      <Text style={styles.subtitle}>Crea una cuenta</Text>
+      <Text style={styles.instruction}>Ingrese un mail para crear la cuenta</Text>
       
       <TextInput
         style={styles.input}
@@ -16,21 +16,21 @@ export default function App() {
       />
       
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Continue</Text>
+        <Text style={styles.buttonText}>Continuar</Text>
       </TouchableOpacity>
       
-      <Text style={styles.orText}>or</Text>
+      <Text style={styles.orText}>o</Text>
       
       <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.socialButtonText}>Continue with Google</Text>
+        <Text style={styles.socialButtonText}>Continuar con Google</Text>
       </TouchableOpacity>
       
       <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.socialButtonText}>Continue with Apple</Text>
+        <Text style={styles.socialButtonText}>Continuar con Apple</Text>
       </TouchableOpacity>
       
       <Text style={styles.footerText}>
-        By clicking continue, you agree to our Terms of Service and Privacy Policy
+        Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad.
       </Text>
       
       <StatusBar style="auto" />
