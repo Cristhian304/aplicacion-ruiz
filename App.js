@@ -1,10 +1,9 @@
-import 'react-native-gesture-handler'; // ¡IMPORTANTE! Siempre al inicio
+import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// Importa tus componentes
 import InicioSesion from './componentes/InicioSesion';
 import CreaCuenta from './componentes/CreaCuenta';
 
