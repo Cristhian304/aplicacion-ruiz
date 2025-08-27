@@ -5,7 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import InicioSesion from './componentes/InicioSesion';
-import CreaCuenta from './componentes/CreaCuenta';
+import CrearCuenta from './componentes/CrearCuenta';
 
 const Stack = createStackNavigator();
 
@@ -19,8 +19,8 @@ export default function App() {
           options={{ title: 'Iniciar Sesión' }} 
         />
         <Stack.Screen 
-          name="creaCuenta" 
-          component={CreaCuenta} 
+          name="CrearCuenta" 
+          component={CrearCuenta} 
           options={{ title: 'Crear Cuenta' }} 
         />
       </Stack.Navigator>

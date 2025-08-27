@@ -1,19 +1,19 @@
-// inicioSesion.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; 
 
 const InicioSesion = ({ navigation }) => {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false); 
 
   const handleInicioSesion = () => {
     if (!correo || !contrasena) {
       Alert.alert('Error', 'Por favor, ingresa tu correo y contraseña.');
       return;
     }
-    // Aquí iría la lógica para validar el usuario (ej: API, Firebase, etc.)
     Alert.alert('Éxito', '¡Inicio de sesión exitoso!');
-    navigation.navigate('Home'); // Redirige al home después de iniciar sesión
+    navigation.navigate('Home');
   };
 
   return (
@@ -28,13 +28,25 @@ const InicioSesion = ({ navigation }) => {
         keyboardType="email-address"
       />
       
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={contrasena}
-        onChangeText={setContrasena}
-        secureTextEntry
-      />
+      <View style={styles.contenedorContrasena}>
+        <TextInput
+          style={styles.inputContrasena}
+          placeholder="Contraseña"
+          value={contrasena}
+          onChangeText={setContrasena}
+          secureTextEntry={!mostrarContrasena} 
+        />
+        <TouchableOpacity 
+          style={styles.botonOjo}
+          onPress={() => setMostrarContrasena(!mostrarContrasena)}
+        >
+          <Ionicons 
+            name={mostrarContrasena ? 'eye-off' : 'eye'} 
+            size={24} 
+            color="#666" 
+          />
+        </TouchableOpacity>
+      </View>
       
       <TouchableOpacity style={styles.boton} onPress={handleInicioSesion}>
         <Text style={styles.textoBoton}>Ingresar</Text>
@@ -52,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffc163',
   },
   titulo: {
     fontSize: 24,
@@ -68,6 +80,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     backgroundColor: '#fff',
+  },
+  contenedorContrasena: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  inputContrasena: {
+    flex: 1,
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+  },
+  botonOjo: {
+    position: 'absolute',
+    right: 15,
+    padding: 10,
   },
   boton: {
     backgroundColor: '#007bff',
