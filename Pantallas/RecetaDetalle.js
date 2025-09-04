@@ -1,14 +1,31 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, Linking } from 'react-native';
 
 export default function RecetaDetalle({ route }) {
   const { receta } = route.params;
+
+  // Función para determinar la fuente de la imagen
+  const getImageSource = () => {
+    if (typeof receta.imagen === 'string') {
+      // Si es string, es URL de API
+      return { uri: receta.imagen };
+    } else {
+      // Si no, es require() local
+      return receta.imagen;
+    }
+  };
+
+  const handleYoutubePress = () => {
+    if (receta.youtube) {
+      Linking.openURL(receta.youtube);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
         <Image 
-          source={receta.imagen} 
+          source={getImageSource()}  // ← Usamos la función aquí
           style={styles.imagenReceta}
           resizeMode="cover"
         />
@@ -37,6 +54,12 @@ export default function RecetaDetalle({ route }) {
             </View>
           ))}
         </View>
+
+        {receta.youtube && (
+          <Text style={styles.youtubeLink} onPress={handleYoutubePress}>
+            🎥 Ver video en YouTube
+          </Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -103,5 +126,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 22,
+  },
+  youtubeLink: {
+    color: '#007AFF',
+    textAlign: 'center',
+    marginVertical: 20,
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
 });

@@ -1,26 +1,12 @@
-import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function pantallaprincipal({ navigation }) {
-  const recetaDestacada = {
-    id: 1,
-    nombre: "Milanesa de Pollo",
-    imagen: require('../assets/milanesadepollo.png'),
-    ingredientes: [
-      { cantidad: "4", producto: "Pechugas de pollo", indicacion: "fileteadas" },
-      { cantidad: "2", producto: "Huevos", indicacion: "batidos" },
-      { cantidad: "1 taza", producto: "Pan rallado" }
-    ],
-    pasos: [
-      "Condimentar los filetes de pollo",
-      "Pasar por huevo batido",
-      "Rebozar con pan rallado",
-      "Freír en aceite caliente"
-    ]
-  };
+export default function Pantallaprincipal({ navigation }) {
+  const [recetaDestacada, setRecetaDestacada] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const recetasSlider = [
     { 
@@ -39,7 +25,7 @@ export default function pantallaprincipal({ navigation }) {
       imagen: require('../assets/omelette.png'),
       ingredientes: [
         { cantidad: "3", producto: "Huevos" },
-        { cantidad: "50 g", producto: "Queso"}
+        { cantidad: "50 g", producto: "Queso", indicacion: "rallado" }
       ],
       pasos: ["Batir los huevos", "Agregar ingredientes", "Cocinar en sartén"]
     },
@@ -52,16 +38,6 @@ export default function pantallaprincipal({ navigation }) {
         { cantidad: "200 g", producto: "Queso mozzarella" }
       ],
       pasos: ["Estirar la masa", "Agregar ingredientes", "Hornear"]
-    },
-    { 
-      id: 4, 
-      nombre: "Arrabiata penne", 
-      imagen: require('../assets/arrabiatepenne.png'),
-      ingredientes: [
-        { cantidad: "250 g", producto: "Penne" },
-        { cantidad: "400 g", producto: "Salsa de tomate" }
-      ],
-      pasos: ["Cocinar la pasta", "Preparar la salsa", "Mezclar y servir"]
     }
   ];
 
@@ -72,12 +48,88 @@ export default function pantallaprincipal({ navigation }) {
     { id: 4, nombre: "Brownie de Chocolate" }
   ];
 
+  const fetchArrabiataPenne = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://www.themealdb.com/api/json/v1/1/lookup.php?i=52771');
+      const data = await response.json();
+      
+      if (data.meals && data.meals.length > 0) {
+        const meal = data.meals[0];
+        
+        const ingredientes = [];
+        for (let i = 1; i <= 20; i++) {
+          const ingrediente = meal[`strIngredient${i}`];
+          const medida = meal[`strMeasure${i}`];
+          
+          if (ingrediente && ingrediente.trim() !== '') {
+            ingredientes.push({
+              cantidad: medida ? medida.trim() : 'Al gusto',
+              producto: ingrediente.trim(),
+              indicacion: ''
+            });
+          }
+        }
+
+        const pasos = meal.strInstructions 
+          ? meal.strInstructions.split('\r\n').filter(paso => paso.trim() !== '')
+          : ['No hay instrucciones disponibles'];
+
+        const recetaTransformada = {
+          id: meal.idMeal,
+          nombre: meal.strMeal,
+          imagen: meal.strMealThumb,
+          categoria: meal.strCategory,
+          area: meal.strArea,
+          ingredientes,
+          pasos,
+          dificultad: 'Media',
+          tiempo: '35 min'
+        };
+
+        setRecetaDestacada(recetaTransformada);
+      }
+    } catch (err) {
+      setRecetaDestacada({
+        id: 4,
+        nombre: "Penne Arrabiata",
+        imagen: require('../assets/arrabiatepenne.png'), 
+        ingredientes: [
+          { cantidad: "250 g", producto: "Penne" },
+          { cantidad: "400 g", producto: "Salsa de tomate" },
+          { cantidad: "2 dientes", producto: "Ajo" },
+          { cantidad: "1 cucharadita", producto: "Chile molido" }
+        ],
+        pasos: [
+          "Cocinar la pasta al dente",
+          "Saltear ajo y chile en aceite de oliva",
+          "Agregar salsa de tomate y cocinar 10 min",
+          "Mezclar con la pasta y servir"
+        ],
+        dificultad: 'Media',
+        tiempo: '25 min'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchArrabiataPenne();
+  }, []);
+
   const renderRecetaSlider = ({ item }) => (
     <TouchableOpacity 
       style={styles.slide}
       onPress={() => navigation.navigate('RecetaDetalle', { receta: item })}
     >
-      <Image source={item.imagen} style={styles.slideImage} resizeMode="cover" />
+      <Image 
+        source={typeof item.imagen === 'string' 
+          ? { uri: item.imagen }      
+          : item.imagen}              
+        style={styles.slideImage} 
+        resizeMode="cover" 
+      />
       <Text style={styles.slideText}>{item.nombre}</Text>
     </TouchableOpacity>
   );
@@ -87,6 +139,15 @@ export default function pantallaprincipal({ navigation }) {
       <Text style={styles.recetaNombre}>{item.nombre}</Text>
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>Cargando receta...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -102,17 +163,24 @@ export default function pantallaprincipal({ navigation }) {
       <ScrollView style={styles.content}>
         <Text style={styles.destacadaTitulo}>Receta recomendada</Text>
         
-        <TouchableOpacity 
-          style={styles.recetaDestacadaContainer}
-          onPress={() => navigation.navigate('RecetaDetalle', { receta: recetaDestacada })}
-        >
-          <Image 
-            source={recetaDestacada.imagen} 
-            style={styles.recetaDestacadaImagen}
-            resizeMode="cover"
-          />
-          <Text style={styles.recetaDestacadaNombre}>{recetaDestacada.nombre}</Text>
-        </TouchableOpacity>
+        {recetaDestacada && (
+          <TouchableOpacity 
+            style={styles.recetaDestacadaContainer}
+            onPress={() => navigation.navigate('RecetaDetalle', { receta: recetaDestacada })}
+          >
+            <Image 
+              source={typeof recetaDestacada.imagen === 'string' 
+                ? { uri: recetaDestacada.imagen }  
+                : recetaDestacada.imagen}         
+              style={styles.recetaDestacadaImagen}
+              resizeMode="cover"
+            />
+            <Text style={styles.recetaDestacadaNombre}>{recetaDestacada.nombre}</Text>
+            {recetaDestacada.categoria && (
+              <Text style={styles.recetaDestacadaCategoria}>{recetaDestacada.categoria}</Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.sectionTitle}>Otras recetas</Text>
         <View style={styles.sliderContainer}>
@@ -141,6 +209,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
   },
   topBar: {
     flexDirection: 'row',
@@ -174,7 +251,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   recetaDestacadaContainer: {
-    height: 180,
+    height: 200,
     marginHorizontal: 15,
     marginBottom: 20,
     borderRadius: 10,
@@ -186,14 +263,25 @@ const styles = StyleSheet.create({
   },
   recetaDestacadaNombre: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 40,
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0,0,0,0.7)',
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    padding: 12,
+    padding: 8,
+    textAlign: 'center',
+  },
+  recetaDestacadaCategoria: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,122,255,0.8)',
+    color: '#fff',
+    fontSize: 14,
+    padding: 4,
     textAlign: 'center',
   },
   sliderContainer: {

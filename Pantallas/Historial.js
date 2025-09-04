@@ -4,8 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function Historial() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>📚 Mi Historial</Text>
-    
+      <Text style={styles.title}>📚 Mi Historial</Text>
     </View>
   );
 }
@@ -17,13 +16,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  text: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 10,
+    color: '#333',
   },
-  subtext: {
+  subtitle: {
     fontSize: 16,
     color: '#666',
   },
