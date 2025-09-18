@@ -13,7 +13,7 @@ const InicioSesion = ({ navigation }) => {
       return;
     }
     Alert.alert('Éxito', '¡Inicio de sesión exitoso!');
-    navigation.navigate('Home');
+    navigation.navigate('Comidas');
   };
 
   return (

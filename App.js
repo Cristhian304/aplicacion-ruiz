@@ -6,13 +6,25 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 import InicioSesion from './componentes/InicioSesion';
 import CrearCuenta from './componentes/CrearCuenta';
+import Comidas from './componentes/Comidas';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="InicioSesion">
+      <Stack.Navigator 
+        initialRouteName="InicioSesion"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#ffc163',
+          },
+          headerTintColor: '#000',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      >
         <Stack.Screen 
           name="InicioSesion" 
           component={InicioSesion} 
@@ -23,6 +35,13 @@ export default function App() {
           component={CrearCuenta} 
           options={{ title: 'Crear Cuenta' }} 
         />
+        <Stack.Screen 
+          name="Comidas" 
+          component={Comidas} 
+          options={{ 
+            title: 'Comidas',
+          }} 
+        />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
@@ -32,7 +51,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffc163',
     alignItems: 'center',
     justifyContent: 'center',
   },
