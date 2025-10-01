@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, FlatList, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, TouchableOpacity, FlatList, Dimensions, ActivityIndicator, StatusBar } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -48,52 +48,13 @@ export default function Pantallaprincipal({ navigation }) {
     { id: 4, nombre: "Brownie de Chocolate" }
   ];
 
-  const fetchArrabiataPenne = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('https://www.themealdb.com/api/json/v1/1/lookup.php?i=52771');
-      const data = await response.json();
-      
-      if (data.meals && data.meals.length > 0) {
-        const meal = data.meals[0];
-        
-        const ingredientes = [];
-        for (let i = 1; i <= 20; i++) {
-          const ingrediente = meal[`strIngredient${i}`];
-          const medida = meal[`strMeasure${i}`];
-          
-          if (ingrediente && ingrediente.trim() !== '') {
-            ingredientes.push({
-              cantidad: medida ? medida.trim() : 'Al gusto',
-              producto: ingrediente.trim(),
-              indicacion: ''
-            });
-          }
-        }
-
-        const pasos = meal.strInstructions 
-          ? meal.strInstructions.split('\r\n').filter(paso => paso.trim() !== '')
-          : ['No hay instrucciones disponibles'];
-
-        const recetaTransformada = {
-          id: meal.idMeal,
-          nombre: meal.strMeal,
-          imagen: meal.strMealThumb,
-          categoria: meal.strCategory,
-          area: meal.strArea,
-          ingredientes,
-          pasos,
-          dificultad: 'Media',
-          tiempo: '35 min'
-        };
-
-        setRecetaDestacada(recetaTransformada);
-      }
-    } catch (err) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
       setRecetaDestacada({
         id: 4,
-        nombre: "Penne Arrabiata",
-        imagen: require('../assets/arrabiatepenne.png'), 
+        nombre: "Spicy Arrabiata Penne",
+        imagen: require('../assets/arrabiatepenne.png'),
+        categoria: "Vegetarian",
         ingredientes: [
           { cantidad: "250 g", producto: "Penne" },
           { cantidad: "400 g", producto: "Salsa de tomate" },
@@ -109,14 +70,16 @@ export default function Pantallaprincipal({ navigation }) {
         dificultad: 'Media',
         tiempo: '25 min'
       });
-    } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchArrabiataPenne();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
   }, []);
+
+  // Función para navegar a Explorar
+  const handleSearchPress = () => {
+    navigation.navigate('Explorar');
+  };
 
   const renderRecetaSlider = ({ item }) => (
     <TouchableOpacity 
@@ -124,9 +87,7 @@ export default function Pantallaprincipal({ navigation }) {
       onPress={() => navigation.navigate('RecetaDetalle', { receta: item })}
     >
       <Image 
-        source={typeof item.imagen === 'string' 
-          ? { uri: item.imagen }      
-          : item.imagen}              
+        source={item.imagen}
         style={styles.slideImage} 
         resizeMode="cover" 
       />
@@ -151,16 +112,25 @@ export default function Pantallaprincipal({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* StatusBar con espacio para notch */}
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header fijo en la parte superior */}
       <View style={styles.topBar}>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.searchButton}>
-            <Feather name="search" size={20} color="#007AFF" />
-            <Text style={styles.headerText}> Search</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.headerTitle}>Recetario</Text>
+        <TouchableOpacity 
+          style={styles.searchButton}
+          onPress={handleSearchPress}
+        >
+          <Feather name="search" size={20} color="#007AFF" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.destacadaTitulo}>Receta recomendada</Text>
         
         {recetaDestacada && (
@@ -169,16 +139,16 @@ export default function Pantallaprincipal({ navigation }) {
             onPress={() => navigation.navigate('RecetaDetalle', { receta: recetaDestacada })}
           >
             <Image 
-              source={typeof recetaDestacada.imagen === 'string' 
-                ? { uri: recetaDestacada.imagen }  
-                : recetaDestacada.imagen}         
+              source={recetaDestacada.imagen}
               style={styles.recetaDestacadaImagen}
               resizeMode="cover"
             />
-            <Text style={styles.recetaDestacadaNombre}>{recetaDestacada.nombre}</Text>
-            {recetaDestacada.categoria && (
-              <Text style={styles.recetaDestacadaCategoria}>{recetaDestacada.categoria}</Text>
-            )}
+            <View style={styles.recetaDestacadaOverlay}>
+              <Text style={styles.recetaDestacadaNombre}>{recetaDestacada.nombre}</Text>
+              {recetaDestacada.categoria && (
+                <Text style={styles.recetaDestacadaCategoria}>{recetaDestacada.categoria}</Text>
+              )}
+            </View>
           </TouchableOpacity>
         )}
 
@@ -190,6 +160,7 @@ export default function Pantallaprincipal({ navigation }) {
             keyExtractor={item => item.id.toString()}
             horizontal
             showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.sliderContent}
           />
         </View>
 
@@ -214,6 +185,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 60,
   },
   loadingText: {
     marginTop: 10,
@@ -223,102 +195,114 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 15,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#e0e0e0',
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
   },
   searchButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerText: {
-    fontSize: 16,
-    color: '#007AFF',
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
   },
   content: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 30,
+  },
   destacadaTitulo: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginHorizontal: 15,
-    marginTop: 10,
-    marginBottom: 5,
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 15,
     color: '#333',
   },
   recetaDestacadaContainer: {
     height: 200,
-    marginHorizontal: 15,
-    marginBottom: 20,
-    borderRadius: 10,
+    marginHorizontal: 20,
+    marginBottom: 25,
+    borderRadius: 15,
     overflow: 'hidden',
+    backgroundColor: '#f8f8f8',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   recetaDestacadaImagen: {
     width: '100%',
     height: '100%',
   },
-  recetaDestacadaNombre: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    padding: 8,
-    textAlign: 'center',
-  },
-  recetaDestacadaCategoria: {
+  recetaDestacadaOverlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,122,255,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 15,
+  },
+  recetaDestacadaNombre: {
     color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  recetaDestacadaCategoria: {
+    color: '#ff8a00',
     fontSize: 14,
-    padding: 4,
-    textAlign: 'center',
+    fontWeight: '600',
   },
   sliderContainer: {
-    height: 130,
-    marginBottom: 15,
+    height: 140,
+    marginBottom: 20,
+  },
+  sliderContent: {
+    paddingHorizontal: 15,
   },
   slide: {
     width: 110,
-    height: 130, 
-    marginHorizontal: 5,
-    borderRadius: 8,
+    height: 140,
+    marginRight: 12,
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#f8f8f8',
+    elevation: 2,
   },
   slideImage: {
     width: '100%',
-    height: 90,
+    height: 100,
   },
   slideText: {
-    padding: 5,
+    padding: 8,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '500',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginHorizontal: 15,
-    marginVertical: 10,
+    marginHorizontal: 20,
+    marginVertical: 15,
     color: '#333',
   },
   recetaItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#f0f0f0',
   },
   recetaNombre: {
     fontSize: 16,
+    color: '#333',
   },
 });
