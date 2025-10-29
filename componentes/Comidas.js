@@ -9,6 +9,81 @@ const Comidas = ({ navigation }) => {
   const [ingredientes, setIngredientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favoritas, setFavoritas] = useState([]);
+  const [traducciones, setTraducciones] = useState({});
+  const [traduciendo, setTraduciendo] = useState(false);
+
+  // Función de traducción
+  const traducirTexto = async (texto, de = 'en', a = 'es') => {
+    if (!texto || texto.trim() === '') return texto;
+    
+    // Cache de traducciones para evitar llamadas repetidas
+    const cacheKey = `${texto}_${de}_${a}`;
+    if (traducciones[cacheKey]) {
+      return traducciones[cacheKey];
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${de}|${a}`
+      );
+      const data = await response.json();
+      
+      if (data.responseData && data.responseData.translatedText) {
+        const textoTraducido = data.responseData.translatedText;
+        // Actualizar cache
+        setTraducciones(prev => ({
+          ...prev,
+          [cacheKey]: textoTraducido
+        }));
+        return textoTraducido;
+      }
+      return texto;
+    } catch (error) {
+      console.error('Error en traducción:', error);
+      return texto; // Devuelve el texto original si hay error
+    }
+  };
+
+  // Traducir todas las comidas
+  const traducirComidas = async (comidasData) => {
+    setTraduciendo(true);
+    const comidasTraducidas = await Promise.all(
+      comidasData.map(async (comida) => ({
+        ...comida,
+        strMealTraducido: await traducirTexto(comida.strMeal, 'en', 'es'),
+        strCategoryTraducido: await traducirTexto(comida.strCategory, 'en', 'es'),
+        strAreaTraducido: await traducirTexto(comida.strArea, 'en', 'es')
+      }))
+    );
+    setTraduciendo(false);
+    return comidasTraducidas;
+  };
+
+  // Traducir categorías
+  const traducirCategorias = async (categoriasData) => {
+    return await Promise.all(
+      categoriasData.map(async (categoria) => ({
+        ...categoria,
+        strCategoryTraducido: await traducirTexto(categoria.strCategory, 'en', 'es'),
+        strCategoryDescriptionTraducido: await traducirTexto(
+          categoria.strCategoryDescription.substring(0, 100), 'en', 'es'
+        )
+      }))
+    );
+  };
+
+  // Traducir ingredientes
+  const traducirIngredientes = async (ingredientesData) => {
+    return await Promise.all(
+      ingredientesData.slice(0, 20).map(async (ingrediente) => ({
+        ...ingrediente,
+        strIngredientTraducido: await traducirTexto(ingrediente.strIngredient, 'en', 'es'),
+        strDescriptionTraducido: ingrediente.strDescription 
+          ? await traducirTexto(ingrediente.strDescription.substring(0, 100), 'en', 'es')
+          : 'Sin descripción disponible'
+      }))
+    );
+  };
 
   // Fetch comidas populares
   const fetchComidas = async () => {
@@ -16,7 +91,8 @@ const Comidas = ({ navigation }) => {
       setLoading(true);
       const response = await fetch('https://www.themealdb.com/api/json/v1/1/search.php?s=');
       const data = await response.json();
-      setComidas(data.meals || []);
+      const comidasTraducidas = await traducirComidas(data.meals || []);
+      setComidas(comidasTraducidas);
     } catch (error) {
       console.error('Error fetching comidas:', error);
     } finally {
@@ -29,7 +105,8 @@ const Comidas = ({ navigation }) => {
     try {
       const response = await fetch('https://www.themealdb.com/api/json/v1/1/categories.php');
       const data = await response.json();
-      setCategorias(data.categories || []);
+      const categoriasTraducidas = await traducirCategorias(data.categories || []);
+      setCategorias(categoriasTraducidas);
     } catch (error) {
       console.error('Error fetching categorias:', error);
     }
@@ -40,7 +117,8 @@ const Comidas = ({ navigation }) => {
     try {
       const response = await fetch('https://www.themealdb.com/api/json/v1/1/list.php?i=list');
       const data = await response.json();
-      setIngredientes(data.meals || []);
+      const ingredientesTraducidos = await traducirIngredientes(data.meals || []);
+      setIngredientes(ingredientesTraducidos);
     } catch (error) {
       console.error('Error fetching ingredientes:', error);
     }
@@ -101,9 +179,15 @@ const Comidas = ({ navigation }) => {
         resizeMode="cover"
       />
       <View style={styles.infoComida}>
-        <Text style={styles.nombreComida}>{comida.strMeal}</Text>
-        <Text style={styles.categoriaComida}>{comida.strCategory}</Text>
-        <Text style={styles.areaComida}>{comida.strArea}</Text>
+        <Text style={styles.nombreComida}>
+          {comida.strMealTraducido || comida.strMeal}
+        </Text>
+        <Text style={styles.categoriaComida}>
+          {comida.strCategoryTraducido || comida.strCategory}
+        </Text>
+        <Text style={styles.areaComida}>
+          {comida.strAreaTraducido || comida.strArea}
+        </Text>
       </View>
       <TouchableOpacity onPress={() => toggleFavorita(comida.idMeal)}>
         <Ionicons 
@@ -116,11 +200,13 @@ const Comidas = ({ navigation }) => {
   );
 
   const renderListaComidas = () => {
-    if (loading) {
+    if (loading || traduciendo) {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#ffc163" />
-          <Text style={styles.loadingText}>Cargando comidas...</Text>
+          <Text style={styles.loadingText}>
+            {traduciendo ? 'Traduciendo comidas...' : 'Cargando comidas...'}
+          </Text>
         </View>
       );
     }
@@ -128,6 +214,15 @@ const Comidas = ({ navigation }) => {
     const comidasMostrar = seccionActiva === 'Favoritas' 
       ? comidas.filter(comida => favoritas.includes(comida.idMeal))
       : comidas;
+
+    if (comidasMostrar.length === 0 && seccionActiva === 'Favoritas') {
+      return (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="heart-outline" size={50} color="#ccc" />
+          <Text style={styles.emptyText}>No tienes comidas favoritas aún</Text>
+        </View>
+      );
+    }
 
     return (
       <View style={styles.listaContainer}>
@@ -149,8 +244,12 @@ const Comidas = ({ navigation }) => {
             style={styles.categoriaImagen}
             resizeMode="cover"
           />
-          <Text style={styles.nombreCategoria}>{categoria.strCategory}</Text>
-          <Text style={styles.descripcionCategoria}>{categoria.strCategoryDescription.substring(0, 60)}...</Text>
+          <Text style={styles.nombreCategoria}>
+            {categoria.strCategoryTraducido || categoria.strCategory}
+          </Text>
+          <Text style={styles.descripcionCategoria}>
+            {(categoria.strCategoryDescriptionTraducido || categoria.strCategoryDescription || '').substring(0, 60)}...
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -158,15 +257,20 @@ const Comidas = ({ navigation }) => {
 
   const renderListaIngredientes = () => (
     <View style={styles.listaContainer}>
-      {ingredientes.slice(0, 20).map((ingrediente, index) => (
+      {ingredientes.map((ingrediente, index) => (
         <TouchableOpacity 
           key={index} 
           style={styles.itemIngrediente}
           onPress={() => navigation.navigate('ComidasPorIngrediente', { ingrediente: ingrediente.strIngredient })}
         >
-          <Text style={styles.nombreIngrediente}>{ingrediente.strIngredient}</Text>
-          <Text style={styles.descripcionIngrediente}>{ingrediente.strDescription ? 
-            ingrediente.strDescription.substring(0, 80) + '...' : 'Sin descripción disponible'}</Text>
+          <Text style={styles.nombreIngrediente}>
+            {ingrediente.strIngredientTraducido || ingrediente.strIngredient}
+          </Text>
+          <Text style={styles.descripcionIngrediente}>
+            {ingrediente.strDescriptionTraducido || 
+             (ingrediente.strDescription ? 
+              ingrediente.strDescription.substring(0, 80) + '...' : 'Sin descripción disponible')}
+          </Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -176,6 +280,9 @@ const Comidas = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.titulo}>Comidas</Text>
+        {(loading || traduciendo) && (
+          <Text style={styles.traduccionInfo}>Traduciendo contenido...</Text>
+        )}
       </View>
 
       {renderSeccionBotones()}
@@ -196,7 +303,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -204,6 +311,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  traduccionInfo: {
+    fontSize: 12,
+    color: '#ffc163',
+    textAlign: 'center',
+    marginTop: 5,
+    fontStyle: 'italic',
   },
   seccionBotonesContainer: {
     borderBottomWidth: 1,
@@ -250,6 +364,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: '#666',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
   },
   listaContainer: {
     padding: 0,
