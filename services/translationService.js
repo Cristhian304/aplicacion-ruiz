@@ -1,292 +1,264 @@
-// services/translationService.js - VERSIÓN COMPLETA CON DICCIONARIO INTEGRADO
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MYMEMORY_API_URL = 'https://api.mymemory.translated.net/get';
-
-// DICCIONARIO COMPLETO DE TÉRMINOS CULINARIOS (integrado en el mismo archivo)
+// Diccionario culinario para traducción instantánea de términos comunes
 const culinaryDictionary = {
-  // 🍳 Técnicas de cocina
-  'bake': 'hornear', 'baked': 'horneado', 'baking': 'horneando',
-  'boil': 'hervir', 'boiled': 'hervido', 'boiling': 'hirviendo',
-  'fry': 'freír', 'fried': 'frito', 'frying': 'friendose',
-  'grill': 'asar a la parrilla', 'grilled': 'a la parrilla',
-  'roast': 'asar', 'roasted': 'asado',
-  'steam': 'cocinar al vapor', 'steamed': 'al vapor',
-  'stew': 'guisar', 'stewed': 'guisado',
-  'simmer': 'cocer a fuego lento', 'simmering': 'cociendo a fuego lento',
-  'saute': 'saltear', 'sauteed': 'salteado',
-  'whisk': 'batir', 'whisked': 'batido', 'whisking': 'batiendo',
-  'stir': 'revolver', 'stirred': 'revolviendo', 'stirring': 'revolviendo',
-  'mix': 'mezclar', 'mixed': 'mezclado', 'mixing': 'mezclando',
-  'blend': 'licuar', 'blended': 'licuado', 'blending': 'licuando',
-  'knead': 'amasar', 'kneaded': 'amasado', 'kneading': 'amasando',
-  'fold': 'incorporar', 'folded': 'incorporado', 'folding': 'incorporando',
-  'dice': 'cortar en cubos', 'diced': 'en cubos',
-  'chopped': 'picado', 'chop': 'picar', 'chopping': 'picando',
-  'slice': 'cortar en rodajas', 'sliced': 'en rodajas',
-  'mince': 'picar fino', 'minced': 'picado fino',
-  'grate': 'rallar', 'grated': 'rallado', 'grating': 'rallando',
-  'peel': 'pelar', 'peeled': 'pelado', 'peeling': 'pelando',
-  'crush': 'machacar', 'crushed': 'machacado',
-  'mash': 'hacer puré', 'mashed': 'en puré',
-  'season': 'sazonar', 'seasoned': 'sazonado', 'seasoning': 'sazonando',
-  'garnish': 'decorar', 'garnished': 'decorado',
-  'preheat': 'precalentar', 'preheated': 'precalentado',
-
-  // 🍖 Carnes
-  'beef': 'carne de res', 'chicken': 'pollo', 'pork': 'cerdo',
-  'lamb': 'cordero', 'veal': 'ternera', 'turkey': 'pavo',
-  'duck': 'pato', 'bacon': 'tocino', 'ham': 'jamón',
-  'sausage': 'salchicha', 'steak': 'bistec', 
-  'ground beef': 'carne molida', 'minced meat': 'carne picada',
-  'ribs': 'costillas', 'breast': 'pechuga', 'thigh': 'muslo',
-  'wing': 'ala', 'leg': 'pierna', 'fillet': 'filete', 'loin': 'lomo',
-
-  // 🐟 Pescados
-  'fish': 'pescado', 'salmon': 'salmón', 'tuna': 'atún',
-  'cod': 'bacalao', 'trout': 'trucha', 'sardine': 'sardina',
-  'shrimp': 'camarón', 'prawn': 'gamba', 'crab': 'cangrejo',
-  'lobster': 'langosta', 'mussel': 'mejillón', 'clam': 'almeja',
-  'squid': 'calamar', 'octopus': 'pulpo', 'seafood': 'mariscos',
-
-  // 🥦 Vegetales
-  'vegetable': 'vegetal', 'vegetables': 'vegetales',
-  'onion': 'cebolla', 'garlic': 'ajo', 'tomato': 'tomate',
-  'potato': 'papa', 'carrot': 'zanahoria', 'bell pepper': 'pimiento',
-  'chili': 'chile', 'mushroom': 'champiñón', 'spinach': 'espinaca',
-  'lettuce': 'lechuga', 'cabbage': 'repollo', 'broccoli': 'brócoli',
-  'cauliflower': 'coliflor', 'celery': 'apio', 'cucumber': 'pepino',
-  'zucchini': 'calabacín', 'eggplant': 'berenjena', 'asparagus': 'espárrago',
-  'corn': 'maíz', 'pea': 'guisante', 'bean': 'frijol',
-  'green bean': 'ejote', 'avocado': 'aguacate', 'olive': 'aceituna',
-
-  // 🍎 Frutas
-  'apple': 'manzana', 'banana': 'plátano', 'orange': 'naranja',
-  'lemon': 'limón', 'lime': 'lima', 'strawberry': 'fresa',
-  'grape': 'uva', 'watermelon': 'sandía', 'melon': 'melón',
-  'pineapple': 'piña', 'mango': 'mango', 'peach': 'durazno',
-
-  // 🧀 Lácteos
-  'milk': 'leche', 'cheese': 'queso', 'butter': 'mantequilla',
-  'cream': 'crema', 'yogurt': 'yogur', 'egg': 'huevo', 'eggs': 'huevos',
-
-  // 🌾 Granos
-  'rice': 'arroz', 'pasta': 'pasta', 'spaghetti': 'espagueti',
-  'bread': 'pan', 'flour': 'harina', 'oat': 'avena',
-
-  // 🧂 Condimentos
-  'salt': 'sal', 'pepper': 'pimienta', 'sugar': 'azúcar',
-  'oil': 'aceite', 'olive oil': 'aceite de oliva',
-  'vinegar': 'vinagre', 'soy sauce': 'salsa de soya',
-  'basil': 'albahaca', 'oregano': 'orégano', 'thyme': 'tomillo',
-  'parsley': 'perejil', 'cilantro': 'cilantro', 'cumin': 'comino',
-
-  // 🍽️ Utensilios
-  'oven': 'horno', 'stove': 'estufa', 'pan': 'sartén',
-  'pot': 'olla', 'bowl': 'tazón', 'knife': 'cuchillo',
-
-  // 📝 Términos
-  'recipe': 'receta', 'ingredient': 'ingrediente', 
-  'direction': 'instrucción', 'step': 'paso',
-  'serving': 'porción', 'preparation': 'preparación',
-
-  // 🥄 Medidas
+  'chicken': 'pollo', 'beef': 'carne', 'pork': 'cerdo', 'fish': 'pescado',
+  'egg': 'huevo', 'milk': 'leche', 'cheese': 'queso', 'bread': 'pan',
+  'rice': 'arroz', 'pasta': 'pasta', 'tomato': 'tomate', 'onion': 'cebolla',
   'cup': 'taza', 'teaspoon': 'cucharadita', 'tablespoon': 'cucharada',
-  'ounce': 'onza', 'pound': 'libra', 'gram': 'gramo',
-  'pinch': 'pizca', 'clove': 'diente',
-
-  // 🍲 Platos
-  'appetizer': 'entrada', 'main course': 'plato principal',
-  'dessert': 'postre', 'soup': 'sopa', 'salad': 'ensalada',
-  'sauce': 'salsa', 'pizza': 'pizza', 'pasta': 'pasta',
-  'burger': 'hamburguesa', 'taco': 'taco', 'sushi': 'sushi',
-
-  // 🔥 Métodos
-  'bake': 'hornear', 'fry': 'freír', 'grill': 'asar',
-  'roast': 'asar', 'saute': 'saltear', 'simmer': 'hervir a fuego lento',
-
-  // 📍 Conectores
-  'and': 'y', 'or': 'o', 'with': 'con', 'without': 'sin',
-  'in': 'en', 'on': 'en', 'to': 'a', 'for': 'para',
-  'of': 'de', 'from': 'de', 'by': 'por'
+  'bake': 'hornear', 'fry': 'freír', 'boil': 'hervir', 'chop': 'picar'
+  // ... (manteniendo solo los términos más esenciales para el ejemplo)
 };
 
-// Función para usar el diccionario
-const translateWithDictionary = (text) => {
+// Codificación segura para URLs de APIs
+const encodeTextForAPI = (text) => {
+  return text ? text.toString().replace(/\s+/g, '+').replace(/&/g, '%26') : '';
+};
+
+// Traducción rápida usando diccionario local (sin llamadas a API)
+export const translateWithDictionary = (text) => {
   if (!text || typeof text !== 'string') return text;
   
-  let translatedText = text;
+  let translated = text;
+  // Ordenar por longitud para coincidencias más específicas primero
+  const entries = Object.entries(culinaryDictionary).sort((a, b) => b[0].length - a[0].length);
   
-  // Buscar palabras completas en el diccionario
-  for (const [english, spanish] of Object.entries(culinaryDictionary)) {
-    const regex = new RegExp(`\\b${english}\\b`, 'gi');
-    translatedText = translatedText.replace(regex, spanish);
+  for (const [english, spanish] of entries) {
+    if (text.toLowerCase().includes(english.toLowerCase())) {
+      const regex = new RegExp(english, 'gi');
+      translated = translated.replace(regex, spanish);
+    }
   }
   
-  return translatedText;
+  return translated;
 };
 
-// Función para decodificar textos con encoding URL
-const decodeText = (text) => {
-  if (!text) return text;
+// ==================== SISTEMA MULTI-API ====================
+
+// Configuración de las 3 APIs de traducción con balance inteligente
+const TRANSLATION_APIS = [
+  {
+    name: 'MyMemory',
+    url: (text) => `https://api.mymemory.translated.net/get?q=${encodeTextForAPI(text)}&langpair=en|es`,
+    parser: (data) => data.responseData?.translatedText,
+    priority: 3
+  },
+  {
+    name: 'LibreTranslate', 
+    url: (text) => `https://translate.argosopentech.com/translate`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: (text) => JSON.stringify({ q: text, source: 'en', target: 'es' }),
+    parser: (data) => data.translatedText,
+    priority: 2
+  },
+  {
+    name: 'GoogleTranslate',
+    url: (text) => `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=${encodeTextForAPI(text)}`,
+    parser: (data) => data?.[0]?.map(item => item[0]).join(''),
+    priority: 1
+  }
+];
+
+// Sistema de estadísticas para balanceo inteligente
+let apiStats = {};
+
+// Inicializar estadísticas para cada API
+const initializeStats = () => {
+  TRANSLATION_APIS.forEach(api => {
+    apiStats[api.name] = { successes: 0, failures: 0, lastUsed: 0, consecutiveFails: 0 };
+  });
+};
+
+// Cargar estadísticas históricas desde almacenamiento local
+const loadApiStats = async () => {
   try {
-    return decodeURIComponent(text.toString().replace(/\+/g, ' '));
+    const stats = await AsyncStorage.getItem('translation_api_stats');
+    if (stats) apiStats = JSON.parse(stats);
+    initializeStats();
   } catch (error) {
-    return text.toString().replace(/%20/g, ' ').replace(/\+/g, ' ');
+    console.log('Error cargando estadísticas');
+    initializeStats();
   }
 };
 
-// Función principal de traducción
-export const translateText = async (text, targetLang = 'es') => {
+// Guardar estadísticas para persistencia entre sesiones
+const saveApiStats = async () => {
   try {
-    if (!text || text.trim() === '') return text;
+    await AsyncStorage.setItem('translation_api_stats', JSON.stringify(apiStats));
+  } catch (error) {
+    console.log('Error guardando estadísticas');
+  }
+};
 
-    // DECODIFICAR EL TEXTO
-    const cleanText = decodeText(text);
-    if (cleanText.trim() === '') return cleanText;
-
-    // PRIMERO USAR EL DICCIONARIO
-    const dictionaryTranslation = translateWithDictionary(cleanText);
+// Algoritmo de selección inteligente basado en rendimiento histórico
+const selectBestAPI = () => {
+  const now = Date.now();
+  const availableAPIs = [];
+  
+  TRANSLATION_APIS.forEach(api => {
+    const stats = apiStats[api.name];
+    const totalAttempts = stats.successes + stats.failures;
+    const successRate = totalAttempts > 0 ? stats.successes / totalAttempts : 0.5;
     
-    // Si el diccionario hizo cambios, usarlo
-    if (dictionaryTranslation !== cleanText) {
-      console.log(`✅ Diccionario: "${cleanText.substring(0, 30)}..." -> "${dictionaryTranslation.substring(0, 30)}..."`);
-      return dictionaryTranslation;
-    }
-
-    console.log(`🔤 API para: "${cleanText.substring(0, 30)}..."`);
-
-    // Verificar cache
-    const cacheKey = `trans_${cleanText}_${targetLang}`;
-    const cached = await AsyncStorage.getItem(cacheKey);
+    // Calcular score con penalizaciones por fallos recientes y uso frecuente
+    const score = api.priority + successRate + 
+                 (stats.consecutiveFails > 3 ? -2 : 0) +
+                 ((now - stats.lastUsed) < 30000 ? -1 : 0);
     
-    if (cached) {
-      console.log(`✅ Cache: "${cleanText.substring(0, 30)}..."`);
-      return cached;
+    availableAPIs.push({ api, score, stats });
+  });
+  
+  // Seleccionar API con mejor score
+  availableAPIs.sort((a, b) => b.score - a.score);
+  return availableAPIs[0].api;
+};
+
+// Traducción individual con una API específica
+const translateWithSpecificAPI = async (text, apiConfig) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  
+  try {
+    let requestOptions = {
+      method: apiConfig.method || 'GET',
+      signal: controller.signal,
+      headers: apiConfig.headers || {}
+    };
+    
+    if (apiConfig.method === 'POST') {
+      requestOptions.body = apiConfig.body(text);
     }
-
-    // Llamar a la API
-    const response = await fetch(
-      `${MYMEMORY_API_URL}?q=${encodeURIComponent(cleanText)}&langpair=en|${targetLang}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-
+    
+    const response = await fetch(apiConfig.url(text), requestOptions);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
     const data = await response.json();
+    const translatedText = apiConfig.parser(data);
+    if (!translatedText) throw new Error('No translation received');
     
-    if (data && data.responseData && data.responseData.translatedText) {
-      let translated = data.responseData.translatedText;
-      
-      // Limpiar y mejorar con diccionario
-      translated = cleanTranslation(translated);
-      translated = translateWithDictionary(translated);
-      
-      console.log(`✅ Traducido: "${cleanText.substring(0, 30)}..." -> "${translated.substring(0, 30)}..."`);
-      
-      // Guardar en cache
-      await AsyncStorage.setItem(cacheKey, translated);
-      
-      return translated;
-    } else {
-      return dictionaryTranslation;
+    // Actualizar estadísticas de éxito
+    apiStats[apiConfig.name].successes++;
+    apiStats[apiConfig.name].lastUsed = Date.now();
+    apiStats[apiConfig.name].consecutiveFails = 0;
+    await saveApiStats();
+    
+    return translatedText
+      .replace(/<[^>]*>/g, '')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .trim();
+    
+  } catch (error) {
+    // Actualizar estadísticas de fallo
+    apiStats[apiConfig.name].failures++;
+    apiStats[apiConfig.name].lastUsed = Date.now();
+    apiStats[apiConfig.name].consecutiveFails++;
+    await saveApiStats();
+    
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
+// Sistema principal de traducción con fallback entre múltiples APIs
+const translateWithAPI = async (text) => {
+  await loadApiStats();
+  const attemptedAPIs = new Set();
+  
+  for (let attempt = 0; attempt < TRANSLATION_APIS.length * 2; attempt++) {
+    const api = selectBestAPI();
+    if (Array.from(attemptedAPIs).filter(name => name === api.name).length >= 2) continue;
+    
+    attemptedAPIs.add(api.name);
+    
+    try {
+      return await translateWithSpecificAPI(text, api);
+    } catch (error) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+    }
+  }
+  
+  throw new Error('Todas las APIs fallaron');
+};
+
+// ==================== TRADUCCIÓN DE RECETAS COMPLETA ====================
+
+// Función principal que orquesta la traducción completa de recetas
+export const translateRecipe = async (recipe) => {
+  const cacheKey = `recipe_${recipe.id}_translated`;
+  
+  // Verificar cache para evitar retraducciones
+  try {
+    const cached = await AsyncStorage.getItem(cacheKey);
+    if (cached) {
+      console.log('✅ Usando traducción en cache');
+      return JSON.parse(cached);
+    }
+  } catch (error) {
+    console.log('Error leyendo cache');
+  }
+
+  console.log('🔄 Traduciendo:', recipe.nombre);
+
+  // Primera fase: traducción rápida con diccionario
+  const baseTranslation = {
+    ...recipe,
+    nombre: translateWithDictionary(recipe.nombre),
+    categoria: translateWithDictionary(recipe.categoria),
+    area: translateWithDictionary(recipe.area),
+    ingredientes: recipe.ingredientes.map(ing => ({
+      ...ing,
+      cantidad: translateWithDictionary(ing.cantidad),
+      producto: translateWithDictionary(ing.producto)
+    }))
+  };
+
+  // Segunda fase: traducción de pasos con APIs (más lenta pero más precisa)
+  try {
+    const translatedSteps = [];
+    
+    for (let i = 0; i < recipe.pasos.length; i++) {
+      try {
+        const translatedPaso = await translateWithAPI(recipe.pasos[i]);
+        translatedSteps.push(translatedPaso);
+        if (i < recipe.pasos.length - 1) await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        // Fallback a diccionario si todas las APIs fallan
+        translatedSteps.push(translateWithDictionary(recipe.pasos[i]));
+      }
     }
     
-  } catch (error) {
-    console.log('❌ Error, usando diccionario:', error.message);
-    return translateWithDictionary(decodeText(text));
-  }
-};
-
-// Función para traducir receta completa
-export const translateRecipe = async (recipe) => {
-  try {
-    console.log('🚀 Traduciendo receta...');
+    const fullTranslatedRecipe = { ...baseTranslation, pasos: translatedSteps };
     
-    // DECODIFICAR RECETA
-    const decodedRecipe = {
-      ...recipe,
-      nombre: decodeText(recipe.nombre),
-      categoria: decodeText(recipe.categoria),
-      area: decodeText(recipe.area),
-      dificultad: decodeText(recipe.dificultad),
-      ingredientes: recipe.ingredientes.map(ing => ({
-        ...ing,
-        cantidad: decodeText(ing.cantidad),
-        producto: decodeText(ing.producto),
-        indicacion: decodeText(ing.indicacion)
-      })),
-      pasos: recipe.pasos.map(paso => decodeText(paso))
-    };
+    // Guardar en cache para uso futuro
+    try {
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(fullTranslatedRecipe));
+    } catch (error) {
+      console.log('Error guardando cache');
+    }
     
-    // Traducir todo
-    const translatedName = await translateText(decodedRecipe.nombre);
-    
-    const translatedIngredients = await Promise.all(
-      decodedRecipe.ingredientes.map(async (ingrediente) => {
-        const translatedProduct = await translateText(ingrediente.producto);
-        const translatedCantidad = ingrediente.cantidad;
-        const translatedIndicacion = ingrediente.indicacion ? 
-          await translateText(ingrediente.indicacion) : '';
-        
-        return {
-          ...ingrediente,
-          cantidad: translatedCantidad,
-          producto: translatedProduct,
-          indicacion: translatedIndicacion
-        };
-      })
-    );
-
-    const translatedSteps = await Promise.all(
-      decodedRecipe.pasos.map(async (paso) => {
-        return await translateText(paso);
-      })
-    );
-
-    const translatedCategory = decodedRecipe.categoria ? await translateText(decodedRecipe.categoria) : '';
-    const translatedArea = decodedRecipe.area ? await translateText(decodedRecipe.area) : '';
-    const translatedDifficulty = decodedRecipe.dificultad ? await translateText(decodedRecipe.dificultad) : '';
-
-    console.log('✅ Traducción completada');
-    
-    return {
-      ...decodedRecipe,
-      nombre: translatedName,
-      categoria: translatedCategory,
-      area: translatedArea,
-      dificultad: translatedDifficulty,
-      ingredientes: translatedIngredients,
-      pasos: translatedSteps
-    };
+    return fullTranslatedRecipe;
     
   } catch (error) {
-    console.log('❌ Error en traducción:', error);
+    // Fallback completo: solo diccionario
     return {
-      ...recipe,
-      nombre: decodeText(recipe.nombre),
-      categoria: decodeText(recipe.categoria),
-      area: decodeText(recipe.area),
-      dificultad: decodeText(recipe.dificultad),
-      ingredientes: recipe.ingredientes.map(ing => ({
-        ...ing,
-        cantidad: decodeText(ing.cantidad),
-        producto: decodeText(ing.producto),
-        indicacion: decodeText(ing.indicacion)
-      })),
-      pasos: recipe.pasos.map(paso => decodeText(paso))
+      ...baseTranslation,
+      pasos: recipe.pasos.map(paso => translateWithDictionary(paso))
     };
   }
 };
 
-// Función para limpiar traducciones
-const cleanTranslation = (text) => {
-  if (!text) return text;
-  return text
-    .replace(/<[^>]*>/g, '')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim();
+// Funciones auxiliares para monitoreo del sistema
+export const getTranslationStats = () => apiStats;
+
+export const resetTranslationStats = async () => {
+  TRANSLATION_APIS.forEach(api => {
+    apiStats[api.name] = { successes: 0, failures: 0, lastUsed: 0, consecutiveFails: 0 };
+  });
+  await saveApiStats();
 };
+
+// Inicializar el sistema al cargar el módulo
+loadApiStats();

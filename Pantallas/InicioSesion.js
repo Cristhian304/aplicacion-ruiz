@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 
-const InicioSesion = ({ navigation }) => {
+export default function InicioSesion({ navigation }) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
-  const [mostrarContrasena, setMostrarContrasena] = useState(false); 
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   const handleInicioSesion = () => {
-  if (!correo || !contrasena) {
-    Alert.alert('Error', 'Por favor, ingresa tu correo y contraseña.');
-    return;
-  }
-  
-  Alert.alert('Éxito', '¡Inicio de sesión exitoso!');
-  
-  // Navegar al MainApp que contiene los tabs
-  navigation.navigate('MainApp');
-};
+    if (!correo || !contrasena) {
+      Alert.alert('Error', 'Por favor, ingresa tu correo y contraseña.');
+      return;
+    }
+    
+    Alert.alert('Éxito', '¡Inicio de sesión exitoso!');
+    navigation.navigate('MainApp');
+  };
 
   return (
     <View style={styles.container}>
@@ -62,7 +60,7 @@ const InicioSesion = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -90,19 +88,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
   inputContrasena: {
     flex: 1,
     height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
     paddingHorizontal: 15,
-    backgroundColor: '#fff',
   },
   botonOjo: {
-    position: 'absolute',
-    right: 15,
     padding: 10,
   },
   boton: {
@@ -126,5 +122,3 @@ const styles = StyleSheet.create({
     color: '#007bff',
   },
 });
-
-export default InicioSesion;

@@ -1,8 +1,8 @@
-// CrearCuenta.js - Versión modificada
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { 
+  StyleSheet, Text, View, TextInput, TouchableOpacity, Alert 
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function CrearCuenta({ navigation }) {
   const [email, setEmail] = useState('');
@@ -11,24 +11,47 @@ export default function CrearCuenta({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
- const handleCrearCuenta = () => {
-  if (!email || !password || !confirmPassword) {
-    Alert.alert('Error', 'Por favor, completa todos los campos');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    Alert.alert('Error', 'Las contraseñas no coinciden');
-    return;
-  }
-
-  Alert.alert('Éxito', '¡Cuenta creada exitosamente!', [
-    {
-      text: 'OK',
-      onPress: () => navigation.navigate('InicioSesion') // Cambiado a navigate
+  const handleCrearCuenta = () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Por favor, completa todos los campos');
+      return;
     }
-  ]);
-};
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
+    Alert.alert('Éxito', '¡Cuenta creada exitosamente!', [
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('InicioSesion')
+      }
+    ]);
+  };
+
+  const PasswordInput = ({ placeholder, value, onChangeText, show, setShow }) => (
+    <View style={styles.passwordContainer}>
+      <TextInput
+        style={styles.passwordInput}
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={!show}
+        autoCapitalize="none"
+      />
+      <TouchableOpacity 
+        style={styles.eyeIcon}
+        onPress={() => setShow(!show)}
+      >
+        <Ionicons 
+          name={show ? 'eye-off' : 'eye'} 
+          size={24} 
+          color="#666" 
+        />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -46,67 +69,29 @@ export default function CrearCuenta({ navigation }) {
         autoCapitalize="none"
       />
       
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-        />
-        <TouchableOpacity 
-          style={styles.eyeIcon}
-          onPress={() => setShowPassword(!showPassword)}
-        >
-          <Ionicons 
-            name={showPassword ? 'eye-off' : 'eye'} 
-            size={24} 
-            color="#666" 
-          />
-        </TouchableOpacity>
-      </View>
+      <PasswordInput 
+        placeholder="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        show={showPassword}
+        setShow={setShowPassword}
+      />
 
-      <View style={styles.passwordContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Confirmar contraseña"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry={!showConfirmPassword}
-          autoCapitalize="none"
-        />
-        <TouchableOpacity 
-          style={styles.eyeIcon}
-          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-        >
-          <Ionicons 
-            name={showConfirmPassword ? 'eye-off' : 'eye'} 
-            size={24} 
-            color="#666" 
-          />
-        </TouchableOpacity>
-      </View>
+      <PasswordInput 
+        placeholder="Confirmar contraseña"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        show={showConfirmPassword}
+        setShow={setShowConfirmPassword}
+      />
       
       <TouchableOpacity style={styles.button} onPress={handleCrearCuenta}>
         <Text style={styles.buttonText}>Crear Cuenta</Text>
       </TouchableOpacity>
       
-      <Text style={styles.orText}>o</Text>
-      
-      <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.socialButtonText}>Continuar con Google</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style={styles.socialButton}>
-        <Text style={styles.socialButtonText}>Continuar con Apple</Text>
-      </TouchableOpacity>
-      
       <Text style={styles.footerText}>
         Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad.
       </Text>
-      
-      <StatusBar style="auto" />
     </View>
   );
 }
@@ -174,24 +159,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  orText: {
-    marginVertical: 10,
-    color: '#666',
-  },
-  socialButton: {
-    width: '100%',
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  socialButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
   },
