@@ -10,7 +10,6 @@ export default function RecetaDetalle({ route }) {
   const [translatedRecipe, setTranslatedRecipe] = useState(null);
   const [translating, setTranslating] = useState(true);
 
-  // Efecto para traducción automática al cargar la pantalla
   useEffect(() => {
     const translateRecipeAsync = async () => {
       setTranslating(true);
@@ -19,7 +18,7 @@ export default function RecetaDetalle({ route }) {
         setTranslatedRecipe(translated);
       } catch (error) {
         console.log('Error en traducción:', error);
-        setTranslatedRecipe(receta); // Fallback a receta original
+        setTranslatedRecipe(receta);
       } finally {
         setTranslating(false);
       }
@@ -28,27 +27,25 @@ export default function RecetaDetalle({ route }) {
     translateRecipeAsync();
   }, []);
 
-  // Usar receta traducida o la original como fallback
   const currentRecipe = translatedRecipe || receta;
+  const ingredientes = currentRecipe.ingredientes || [];
+  const pasos = currentRecipe.pasos || [];
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
-        {/* Imagen principal de la receta */}
         <Image 
           source={typeof currentRecipe.imagen === 'string' ? 
             { uri: currentRecipe.imagen } : currentRecipe.imagen}
           style={styles.imagenReceta}
         />
         
-        {/* Header con título y categoría */}
         <View style={styles.header}>
-          <Text style={styles.titulo}>{currentRecipe.nombre}</Text>
+          <Text style={styles.titulo}>{currentRecipe.nombre || 'Receta sin nombre'}</Text>
           {currentRecipe.categoria && (
             <Text style={styles.categoria}>{currentRecipe.categoria}</Text>
           )}
 
-          {/* Indicador visual de traducción en proceso */}
           {translating && (
             <View style={styles.translatingContainer}>
               <ActivityIndicator size="small" color="#007AFF" />
@@ -57,18 +54,20 @@ export default function RecetaDetalle({ route }) {
           )}
         </View>
 
-        {/* Sección de ingredientes */}
         <View style={styles.seccion}>
           <Text style={styles.subtitulo}>📋 Ingredientes</Text>
-          {currentRecipe.ingredientes.map((ingrediente, index) => (
-            <View key={index} style={styles.ingrediente}>
-              <Text style={styles.cantidad}>{ingrediente.cantidad}</Text>
-              <Text style={styles.producto}>{ingrediente.producto}</Text>
-            </View>
-          ))}
+          {ingredientes.length === 0 ? (
+            <Text style={styles.emptyText}>No hay ingredientes disponibles</Text>
+          ) : (
+            ingredientes.map((ingrediente, index) => (
+              <View key={`ing-${index}`} style={styles.ingrediente}>
+                <Text style={styles.cantidad}>{ingrediente.cantidad || ''}</Text>
+                <Text style={styles.producto}>{ingrediente.producto || ''}</Text>
+              </View>
+            ))
+          )}
         </View>
 
-        {/* Sección de pasos de preparación */}
         <View style={styles.seccion}>
           <Text style={styles.subtitulo}>👨‍🍳 Preparación</Text>
           {translating ? (
@@ -76,9 +75,11 @@ export default function RecetaDetalle({ route }) {
               <ActivityIndicator size="large" color="#007AFF" />
               <Text style={styles.loadingText}>Traduciendo pasos...</Text>
             </View>
+          ) : pasos.length === 0 ? (
+            <Text style={styles.emptyText}>No hay instrucciones disponibles</Text>
           ) : (
-            currentRecipe.pasos.map((paso, index) => (
-              <View key={index} style={styles.paso}>
+            pasos.map((paso, index) => (
+              <View key={`paso-${index}`} style={styles.paso}>
                 <Text style={styles.numeroPaso}>{index + 1}.</Text>
                 <Text style={styles.textoPaso}>{paso}</Text>
               </View>
@@ -108,5 +109,12 @@ const styles = StyleSheet.create({
   numeroPaso: { fontWeight: 'bold', marginRight: 8, fontSize: 16, color: '#007AFF' },
   textoPaso: { flex: 1, fontSize: 16, color: '#333', lineHeight: 22 },
   loadingContainer: { alignItems: 'center', padding: 20 },
-  loadingText: { marginTop: 10, color: '#666' }
+  loadingText: { marginTop: 10, color: '#666' },
+  emptyText: { 
+    fontSize: 16, 
+    color: '#666', 
+    fontStyle: 'italic', 
+    textAlign: 'center',
+    marginTop: 10
+  }
 });

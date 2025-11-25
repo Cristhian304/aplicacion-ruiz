@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-// Diccionario para búsquedas bilingües (español -> inglés)
+// Diccionario para búsquedas bilingües
 const spanishToEnglishDict = {
   'pollo': 'chicken', 'carne': 'beef', 'cerdo': 'pork', 'pescado': 'fish',
   'pasta': 'pasta', 'arroz': 'rice', 'ensalada': 'salad', 'sopa': 'soup',
@@ -20,7 +20,6 @@ export default function Explorar({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [mostrarResultadosBusqueda, setMostrarResultadosBusqueda] = useState(false);
 
-  // Cargar datos iniciales al montar el componente
   useEffect(() => {
     cargarDatosIniciales();
   }, []);
@@ -29,7 +28,6 @@ export default function Explorar({ navigation }) {
     try {
       setLoading(true);
       
-      // Obtener categorías y recetas aleatorias en paralelo
       const [categoriasRes, ...recetasData] = await Promise.all([
         fetch('https://www.themealdb.com/api/json/v1/1/categories.php').then(res => res.json()),
         ...Array.from({ length: 6 }, () => 
@@ -38,14 +36,14 @@ export default function Explorar({ navigation }) {
       ]);
       
       const categoriasTransformadas = categoriasRes.categories.map(cat => ({
-        id: cat.idCategory,
+        id: `cat-${cat.idCategory}`,
         nombre: cat.strCategory,
         imagen: cat.strCategoryThumb
       }));
 
       const recetasTransformadas = recetasData
         .filter(data => data.meals?.[0])
-        .map(data => transformarRecetaAPI(data.meals[0]));
+        .map((data, index) => transformarRecetaAPI(data.meals[0], `random-${index}`));
 
       setCategorias(categoriasTransformadas);
       setRecetas(recetasTransformadas);
@@ -58,7 +56,6 @@ export default function Explorar({ navigation }) {
     }
   };
 
-  // Buscar recetas por texto (soporta español e inglés)
   const buscarRecetas = async (texto) => {
     if (!texto.trim()) {
       setRecetas([]);
@@ -68,14 +65,13 @@ export default function Explorar({ navigation }) {
 
     try {
       setMostrarResultadosBusqueda(true);
-      // Traducir término de búsqueda del español al inglés si es necesario
       const searchTerm = Object.entries(spanishToEnglishDict).reduce((term, [es, en]) => 
         term.toLowerCase().includes(es) ? en : term, texto);
       
       const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`);
       const data = await response.json();
       
-      setRecetas(data.meals ? data.meals.map(transformarRecetaAPI) : []);
+      setRecetas(data.meals ? data.meals.map((meal, index) => transformarRecetaAPI(meal, `search-${index}`)) : []);
       
     } catch (error) {
       console.error('Error buscando recetas:', error);
@@ -84,7 +80,6 @@ export default function Explorar({ navigation }) {
     }
   };
 
-  // Filtrar recetas por categoría seleccionada
   const filtrarPorCategoria = async (categoria) => {
     try {
       setMostrarResultadosBusqueda(true);
@@ -94,12 +89,11 @@ export default function Explorar({ navigation }) {
       const data = await response.json();
       
       if (data.meals) {
-        // Obtener detalles completos de las primeras 8 recetas
         const recetasDetalles = await Promise.all(
-          data.meals.slice(0, 8).map(receta => 
+          data.meals.slice(0, 8).map((receta, index) => 
             fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${receta.idMeal}`)
               .then(res => res.json())
-              .then(data => transformarRecetaAPI(data.meals[0]))
+              .then(data => transformarRecetaAPI(data.meals[0], `cat-${receta.idMeal}-${index}`))
           )
         );
         setRecetas(recetasDetalles);
@@ -112,11 +106,9 @@ export default function Explorar({ navigation }) {
     }
   };
 
-  // Transformar datos de la API a formato interno de la app
-  const transformarRecetaAPI = (recetaAPI) => {
+  const transformarRecetaAPI = (recetaAPI, uniqueId) => {
     const ingredientes = [];
     
-    // Extraer ingredientes (la API los tiene en campos strIngredient1...strIngredient20)
     for (let i = 1; i <= 20; i++) {
       const ingrediente = recetaAPI[`strIngredient${i}`];
       const medida = recetaAPI[`strMeasure${i}`];
@@ -129,24 +121,22 @@ export default function Explorar({ navigation }) {
       }
     }
 
-    // Dividir instrucciones en pasos individuales
     const pasos = recetaAPI.strInstructions 
       ? recetaAPI.strInstructions.split('\r\n').filter(paso => paso.trim())
       : ['No hay instrucciones disponibles'];
 
     return {
-      id: recetaAPI.idMeal,
+      id: uniqueId || recetaAPI.idMeal,
       nombre: recetaAPI.strMeal,
       imagen: recetaAPI.strMealThumb,
       categoria: recetaAPI.strCategory,
       area: recetaAPI.strArea,
       ingredientes,
       pasos,
-      tiempo: '30 min' // Valor por defecto ya que la API no provee tiempo
+      tiempo: '30 min'
     };
   };
 
-  // Componente para mostrar cada categoría
   const renderCategoria = ({ item }) => (
     <TouchableOpacity 
       style={styles.categoriaCard}
@@ -157,7 +147,6 @@ export default function Explorar({ navigation }) {
     </TouchableOpacity>
   );
 
-  // Componente para mostrar cada receta en la lista
   const renderReceta = ({ item }) => (
     <TouchableOpacity 
       style={styles.recetaCard}
@@ -174,7 +163,6 @@ export default function Explorar({ navigation }) {
     </TouchableOpacity>
   );
 
-  // Pantalla de carga mientras se obtienen los datos
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -186,12 +174,10 @@ export default function Explorar({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header de la pantalla */}
       <View style={styles.header}>
         <Text style={styles.titulo}>🔍 Explorar Recetas</Text>
       </View>
 
-      {/* Barra de búsqueda con funcionalidad de limpiar */}
       <View style={styles.searchContainer}>
         <Feather name="search" size={20} color="#666" style={styles.searchIcon} />
         <TextInput
@@ -213,7 +199,6 @@ export default function Explorar({ navigation }) {
         )}
       </View>
 
-      {/* Lista horizontal de categorías */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Categorías</Text>
         <FlatList
@@ -226,7 +211,6 @@ export default function Explorar({ navigation }) {
         />
       </View>
 
-      {/* Lista de recetas (resultados de búsqueda o populares) */}
       <View style={styles.recetasSection}>
         <Text style={styles.sectionTitle}>
           {mostrarResultadosBusqueda ? 'Resultados' : 'Recetas Populares'}
@@ -252,7 +236,6 @@ export default function Explorar({ navigation }) {
   );
 }
 
-// Estilos optimizados para la pantalla de exploración
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', paddingTop: 50 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },

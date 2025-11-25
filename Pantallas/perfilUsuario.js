@@ -17,19 +17,19 @@ export default function PerfilUsuario({ navigation }) {
 
   const menuItems = [
     {
-      id: '1',
+      id: 'menu-1',
       icon: <Ionicons name="settings-outline" size={24} color="#000" />,
       text: "Ajustes",
       onPress: () => navigation.navigate('AjustesScreen')
     },
     {
-      id: '2',
+      id: 'menu-2',
       icon: <Feather name="clock" size={24} color="#000" />,
       text: "Historial", 
       onPress: () => navigation.navigate('Historial')
     },
     {
-      id: '3',
+      id: 'menu-3',
       icon: <Ionicons name="heart-outline" size={24} color="#000" />,
       text: "Favoritos",
       onPress: () => console.log('Favoritos')

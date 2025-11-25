@@ -41,9 +41,8 @@ export default function AjustesScreen({ navigation }) {
             />
           </View>
 
-          {/* ✅ CORREGIDO: El emoji está dentro del Text component */}
           <Text style={styles.settingNote}>
-            ℹ️ Los ingredientes y nombres siempre se traducen automáticamente
+            Los ingredientes y nombres siempre se traducen automáticamente
           </Text>
         </View>
 

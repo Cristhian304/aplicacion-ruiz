@@ -5,17 +5,17 @@ import { Ionicons } from '@expo/vector-icons';
 export default function Historial() {
   
   const historialRecetas = [
-    { id: '1', nombre: "Spicy Arrabiata Penne", fecha: "Hoy", categoria: "Italiana" },
-    { id: '2', nombre: "Empanadas de Carne", fecha: "Ayer", categoria: "Argentina" },
-    { id: '3', nombre: "Omelette de Queso", fecha: "15 Ene", categoria: "Desayuno" },
-    { id: '4', nombre: "Pizza Margherita", fecha: "14 Ene", categoria: "Italiana" },
-    { id: '5', nombre: "Ensalada César", fecha: "13 Ene", categoria: "Ensaladas" },
+    { id: 'hist-1', nombre: "Spicy Arrabiata Penne", fecha: "Hoy", categoria: "Italiana" },
+    { id: 'hist-2', nombre: "Empanadas de Carne", fecha: "Ayer", categoria: "Argentina" },
+    { id: 'hist-3', nombre: "Omelette de Queso", fecha: "15 Ene", categoria: "Desayuno" },
+    { id: 'hist-4', nombre: "Pizza Margherita", fecha: "14 Ene", categoria: "Italiana" },
+    { id: 'hist-5', nombre: "Ensalada César", fecha: "13 Ene", categoria: "Ensaladas" },
   ];
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollContainer}>
-        <Text style={styles.title}>📚 Mi Historial</Text>
+        <Text style={styles.title}> Mi Historial</Text>
         <Text style={styles.subtitle}>Recetas que has visto recientemente</Text>
         
         {historialRecetas.map((receta) => (

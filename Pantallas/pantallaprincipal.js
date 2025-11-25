@@ -9,24 +9,23 @@ export default function PantallaPrincipal({ navigation }) {
   const [recetaDestacada, setRecetaDestacada] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Datos locales para mostrar mientras carga la app
+  // Datos de ejemplo con claves únicas
   const recetasSlider = [
-    { id: '1', nombre: "Empanadas", imagen: require('../assets/empanadasdecarne.png') },
-    { id: '2', nombre: "Omelette", imagen: require('../assets/omelette.png') },
-    { id: '3', nombre: "Pizza", imagen: require('../assets/pizza.png') }
+    { id: 'slider-1', nombre: "Empanadas", imagen: require('../assets/empanadasdecarne.png') },
+    { id: 'slider-2', nombre: "Omelette", imagen: require('../assets/omelette.png') },
+    { id: 'slider-3', nombre: "Pizza", imagen: require('../assets/pizza.png') }
   ];
 
   const recetasRecientes = [
-    { id: '1', nombre: "Milanesa Napolitana" },
-    { id: '2', nombre: "Risotto de Hongos" },
-    { id: '3', nombre: "Ensalada César" }
+    { id: 'reciente-1', nombre: "Milanesa Napolitana" },
+    { id: 'reciente-2', nombre: "Risotto de Hongos" },
+    { id: 'reciente-3', nombre: "Ensalada César" }
   ];
 
-  // Simular carga de receta destacada desde API
   useEffect(() => {
     const timer = setTimeout(() => {
       setRecetaDestacada({
-        id: '4',
+        id: 'destacada-1',
         nombre: "Spicy Arrabiata Penne",
         imagen: require('../assets/arrabiatepenne.png'),
         categoria: "Vegetarian",
@@ -38,7 +37,7 @@ export default function PantallaPrincipal({ navigation }) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Renderizado de items del slider horizontal
+  // Renderizado del slider con clave única
   const renderRecetaSlider = ({ item }) => (
     <TouchableOpacity 
       style={styles.slide}
@@ -49,7 +48,6 @@ export default function PantallaPrincipal({ navigation }) {
     </TouchableOpacity>
   );
 
-  // Pantalla de carga mientras se obtienen datos
   if (loading) {
     return (
       <View style={styles.center}>
@@ -63,7 +61,6 @@ export default function PantallaPrincipal({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* Header con título y botón de búsqueda */}
       <View style={styles.topBar}>
         <Text style={styles.headerTitle}>Recetario</Text>
         <TouchableOpacity 
@@ -74,10 +71,7 @@ export default function PantallaPrincipal({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Contenido principal scrollable */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        
-        {/* Receta destacada principal */}
         <Text style={styles.destacadaTitulo}>Receta recomendada</Text>
         {recetaDestacada && (
           <TouchableOpacity 
@@ -92,7 +86,6 @@ export default function PantallaPrincipal({ navigation }) {
           </TouchableOpacity>
         )}
 
-        {/* Slider horizontal de recetas */}
         <Text style={styles.sectionTitle}>Otras recetas</Text>
         <FlatList
           data={recetasSlider}
@@ -103,7 +96,6 @@ export default function PantallaPrincipal({ navigation }) {
           contentContainerStyle={styles.sliderContent}
         />
 
-        {/* Lista de recetas recientes */}
         <Text style={styles.sectionTitle}>Recetas recientes</Text>
         {recetasRecientes.map((item) => (
           <View key={item.id} style={styles.recetaItem}>
@@ -115,7 +107,6 @@ export default function PantallaPrincipal({ navigation }) {
   );
 }
 
-// Estilos optimizados para la pantalla principal
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 },
